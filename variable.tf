@@ -19,12 +19,12 @@ variable "provider_region" {
 }
 
 variable "ec2" {
-  default = 3
+  default = 6
   type = number
 }
 
 variable "subnets" {
-  default = 2
+  default = 3
   type = number
 }
 

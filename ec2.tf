@@ -75,18 +75,10 @@ resource "aws_subnet" "subnets" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = {
-    Name = "one"
+    Name = "subnet ${count.index +1}"
   }
 }
-# resource "aws_subnet" "two" {
-#   vpc_id            = aws_vpc.main.id
-#   cidr_block        = "10.0.2.0/24"
-#   availability_zone = "eu-west-1b"
 
-#   tags = {
-#     Name = "two"
-#   }
-# }
 resource "aws_route_table_association" "rta" {
   count = var.ec2
   subnet_id      = aws_subnet.subnets[count.index].id
