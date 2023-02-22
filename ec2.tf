@@ -29,20 +29,7 @@ resource "aws_instance" "yarden-ec2" {
     Name = "yarden-tf-${count.index +1}"
   }
 }
-# resource "aws_instance" "yarden-ec2-2" {
 
-#   ami                         = var.ami
-#   instance_type               = var.instance_type
-#   vpc_security_group_ids      = [aws_security_group.ec2-sg.id]
-#   key_name                    = var.key_name
-#   subnet_id                   = aws_subnet.two.id
-#   associate_public_ip_address = true
-#   user_data                   = "${file("dockerscript.sh")}"
-  
-#   tags = {
-#     Name = "yarden-from-tf2"
-#   }
-# }
 resource "aws_security_group" "ec2-sg" {
   name   = "yarden-ec2-SG"
   vpc_id = aws_vpc.main.id

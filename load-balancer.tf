@@ -57,8 +57,3 @@ resource "aws_lb_target_group_attachment" "tg" {
   target_id        = aws_instance.yarden-ec2[count.index].id
   port             = 80
 }
-# resource "aws_lb_target_group_attachment" "tg-2" {
-#   target_group_arn = aws_lb_target_group.TG.arn
-#   target_id        = aws_instance.yarden-ec2-2.id
-#   port             = 80
-# }
