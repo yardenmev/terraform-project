@@ -21,11 +21,12 @@ resource "aws_security_group" "lb-sg" {
   }
 }
 resource "aws_lb" "yarden-lb" {
+  
   name               = "yarden-lb-tf"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.lb-sg.id]
-  subnets            = [aws_subnet.one.id, aws_subnet.two.id]
+  subnets            = [for subnets in aws_subnet.subnets : subnets.id]
 
   # enable_deletion_protection = true
 
@@ -50,13 +51,14 @@ resource "aws_lb_target_group" "TG" {
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 }
-resource "aws_lb_target_group_attachment" "tg-1" {
+resource "aws_lb_target_group_attachment" "tg" {
+  count = var.ec2
   target_group_arn = aws_lb_target_group.TG.arn
-  target_id        = aws_instance.yarden-ec2-1.id
+  target_id        = aws_instance.yarden-ec2[count.index].id
   port             = 80
 }
-resource "aws_lb_target_group_attachment" "tg-2" {
-  target_group_arn = aws_lb_target_group.TG.arn
-  target_id        = aws_instance.yarden-ec2-2.id
-  port             = 80
-}
+# resource "aws_lb_target_group_attachment" "tg-2" {
+#   target_group_arn = aws_lb_target_group.TG.arn
+#   target_id        = aws_instance.yarden-ec2-2.id
+#   port             = 80
+# }

@@ -19,9 +19,15 @@ variable "provider_region" {
 }
 
 variable "ec2" {
-  type    = list(string)
-  default = ["yar1", "yar2"]
+  default = 3
+  type = number
 }
+
+variable "subnets" {
+  default = 2
+  type = number
+}
+
 
 
 

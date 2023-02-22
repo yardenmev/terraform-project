@@ -15,34 +15,34 @@ terraform {
     region = "eu-west-1"
   }
 }
-resource "aws_instance" "yarden-ec2-1" {
+resource "aws_instance" "yarden-ec2" {
 
   ami                         = var.ami
   instance_type               = var.instance_type
   vpc_security_group_ids      = [aws_security_group.ec2-sg.id]
   key_name                    = var.key_name
-  subnet_id                   = aws_subnet.one.id
+  subnet_id                   = aws_subnet.subnets[count.index].id
   associate_public_ip_address = true
   user_data                   = "${file("dockerscript.sh")}"
-  # for_each = var.ec2
+  count = var.ec2
   tags = {
-    # Name = each.value
+    Name = "yarden-tf-${count.index +1}"
   }
 }
-resource "aws_instance" "yarden-ec2-2" {
+# resource "aws_instance" "yarden-ec2-2" {
 
-  ami                         = var.ami
-  instance_type               = var.instance_type
-  vpc_security_group_ids      = [aws_security_group.ec2-sg.id]
-  key_name                    = var.key_name
-  subnet_id                   = aws_subnet.two.id
-  associate_public_ip_address = true
-  user_data                   = "${file("dockerscript.sh")}"
+#   ami                         = var.ami
+#   instance_type               = var.instance_type
+#   vpc_security_group_ids      = [aws_security_group.ec2-sg.id]
+#   key_name                    = var.key_name
+#   subnet_id                   = aws_subnet.two.id
+#   associate_public_ip_address = true
+#   user_data                   = "${file("dockerscript.sh")}"
   
-  tags = {
-    Name = "yarden-from-tf2"
-  }
-}
+#   tags = {
+#     Name = "yarden-from-tf2"
+#   }
+# }
 resource "aws_security_group" "ec2-sg" {
   name   = "yarden-ec2-SG"
   vpc_id = aws_vpc.main.id
@@ -71,6 +71,9 @@ resource "aws_security_group" "ec2-sg" {
     Name = "yarden-ec2-SG-tf"
   }
 }
+data "aws_availability_zones" "available" {
+  state = "available"
+}
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 
@@ -78,32 +81,34 @@ resource "aws_vpc" "main" {
     Name = "yarden VPC"
   }
 }
-resource "aws_subnet" "one" {
+resource "aws_subnet" "subnets" {
+  count = var.ec2
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "eu-west-1a"
+  cidr_block        = "10.0.${count.index +1}.0/24"
+  availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = {
     Name = "one"
   }
 }
-resource "aws_subnet" "two" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "eu-west-1b"
+# resource "aws_subnet" "two" {
+#   vpc_id            = aws_vpc.main.id
+#   cidr_block        = "10.0.2.0/24"
+#   availability_zone = "eu-west-1b"
 
-  tags = {
-    Name = "two"
-  }
-}
-resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.one.id
+#   tags = {
+#     Name = "two"
+#   }
+# }
+resource "aws_route_table_association" "rta" {
+  count = var.ec2
+  subnet_id      = aws_subnet.subnets[count.index].id
   route_table_id = aws_route_table.public_rt.id
 }
-resource "aws_route_table_association" "b" {
-  subnet_id      = aws_subnet.two.id
-  route_table_id = aws_route_table.public_rt.id
-}
+# resource "aws_route_table_association" "b" {
+#   subnet_id      = aws_subnet.two.id
+#   route_table_id = aws_route_table.public_rt.id
+# }
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
 
