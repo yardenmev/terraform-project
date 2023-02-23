@@ -21,7 +21,7 @@ resource "aws_instance" "yarden-ec2" {
   instance_type               = var.instance_type
   vpc_security_group_ids      = [aws_security_group.ec2-sg.id]
   key_name                    = var.key_name
-  subnet_id                   = aws_subnet.subnets[count.index].id
+  subnet_id                   = element(aws_subnet.subnets, count.index).id
   associate_public_ip_address = true
   user_data                   = "${file("dockerscript.sh")}"
   count = var.ec2
@@ -69,7 +69,7 @@ resource "aws_vpc" "main" {
   }
 }
 resource "aws_subnet" "subnets" {
-  count = var.ec2
+  count = length(data.aws_availability_zones.available.names)
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.${count.index +1}.0/24"
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
@@ -80,14 +80,11 @@ resource "aws_subnet" "subnets" {
 }
 
 resource "aws_route_table_association" "rta" {
-  count = var.ec2
-  subnet_id      = aws_subnet.subnets[count.index].id
+  count = length(data.aws_availability_zones.available.names)
+  subnet_id      =  element(aws_subnet.subnets, count.index).id
   route_table_id = aws_route_table.public_rt.id
 }
-# resource "aws_route_table_association" "b" {
-#   subnet_id      = aws_subnet.two.id
-#   route_table_id = aws_route_table.public_rt.id
-# }
+
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
 
